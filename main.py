@@ -157,7 +157,7 @@ def scan():
         pdf_filename = None
     elif scan_type == "ZAP PROXY":
         zap_options = data.get("zap_options", {})
-        target_ip = data.get("target_ip", "https://example.com")  # Kullanıcının girdiği IP veya URL
+        target_ip = data.get("target_ip", "https://example.com")  
 
         start_zap()
         print("[+] ZAP'ın hazır olması bekleniyor...")
