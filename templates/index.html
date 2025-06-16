@@ -231,9 +231,9 @@ function toggleNmapOptions() {
         nmapTypeField.style.display = "none";
         commandField.style.display = "none";
         zapOptionsField.style.display = "none";
-        sqlField.style.display = "block"; // 🔥 sadece bu burada aktif
+        sqlField.style.display = "block"; 
       } else {
-        // Diğerleri için hepsini kapat
+      
         nmapTypeField.style.display = "none";
         commandField.style.display = "none";
         zapOptionsField.style.display = "none";
@@ -419,8 +419,8 @@ function startCapture() {
   })
   .then(res => res.json())
   .then(data => {
-    // 🔥 BURAYA EKLE
-    console.log("🧠 Sunucudan gelen veri:", data);  // <-- BU SATIRI EKLE
+   
+    console.log("🧠 Sunucudan gelen veri:", data);  
 
     if (data.status === "success") {
       const link = `<a href="/download_capture/${data.filename}" target="_blank">📥 Kaydı İndir (.pcap)</a>`;
@@ -431,7 +431,7 @@ function startCapture() {
   })
   .catch(error => {
     statusEl.innerHTML = "❌ İstek gönderilirken hata oluştu.";
-    console.error("İstek hatası:", error); // hata varsa göster
+    console.error("İstek hatası:", error); 
   });
 }
 </script>
