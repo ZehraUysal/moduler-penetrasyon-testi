@@ -1,0 +1,193 @@
+/* Genel Stil */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* Container */
+.container {
+  max-width: 500px;
+  margin: 40px auto;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Header */
+header {
+  background-color: #007BFF;
+  padding: 30px;
+  text-align: center;
+  color: #fff;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+header p {
+  margin: 10px 0 0;
+  font-size: 16px;
+}
+
+/* Main İçerik */
+main {
+  padding: 30px 20px;
+}
+
+.form-section {
+  text-align: left;
+}
+
+.form-section h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* Form Elemanları */
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.input-group select,
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Buton */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #28a745;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #218838;
+}
+
+/* Sonuç Alanı */
+.result {
+  margin-top: 20px;
+  background-color: #f7f7f7;
+  padding: 15px;
+  border-radius: 5px;
+  color: #333;
+  white-space: pre-wrap; /* Nmap sonuçlarının düzgün görünmesini sağlar */
+  word-wrap: break-word;
+  overflow-x: auto;
+  font-family: monospace;
+}
+
+/* Yükleme Animasyonu */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #007BFF;
+  margin-top: 20px;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 123, 255, 0.3);
+  border-top: 4px solid #007BFF;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 15px;
+  background-color: #f8f8f8;
+  font-size: 14px;
+  color: #777;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 600px) {
+  .container {
+    margin: 20px;
+  }
+  header h1 {
+    font-size: 24px;
+  }
+  header p, .form-section h2 {
+    font-size: 16px;
+  }
+}
+.loading-animation {
+  font-size: 18px;
+  font-weight: bold;
+  color: #007bff;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.loading-animation i {
+  font-size: 22px;
+  margin-right: 10px;
+  animation: spin 1s linear infinite;
+}
+.old-pdf {
+  font-size: 14px;
+  background: #f8f9fa;
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 5px 0;
+  display: inline-block;
+}
+
+.old-pdf a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: bold;
+}
+
+#old_pdfs {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+}
+
+
+

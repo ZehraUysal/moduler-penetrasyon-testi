@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penetrasyon Testi Arayüzü</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .pdf-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      display: none;
+    }
+    .pdf-container a {
+      display: block;
+      margin-top: 10px;
+      background: #007bff;
+      color: #fff;
+      padding: 10px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<script>
+function loginInjection() {
+  fetch("/login_injection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: document.getElementById("injection_username").value,
+      password: document.getElementById("injection_password").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      document.getElementById("login_form").style.display = "none";
+      document.getElementById("comment_search_section").style.display = "block";
+      document.getElementById("login_status").textContent = "";
+    } else {
+      document.getElementById("login_status").textContent = data.message || "Giriş başarısız.";
+    }
+  });
+}
+
+function submitCommentInjection() {
+  fetch("/add_comment_injection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      comment: document.getElementById("injection_comment").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("comment_status").textContent = data.message || "";
+  });
+}
+
+function searchInjection() {
+  fetch("/search_injection", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      payload: document.getElementById("injection_payload").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      let output = `<strong>Sorgu:</strong> ${data.query}\n`;
+      data.results.forEach(row => {
+        output += `- ${row.comment_text}\n`;
+      });
+      document.getElementById("injection_result").textContent = output;
+    } else {
+      document.getElementById("injection_result").textContent = data.message || "Hata oluştu.";
+    }
+  });
+}
+
+document.getElementById("scan_type").addEventListener("change", () => {
+  const sqlBlock = document.getElementById("sql_injection_section");
+  sqlBlock.style.display = document.getElementById("scan_type").value === "sql_injection" ? "block" : "none";
+});
+</script>
+
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-shield-alt"></i> Modüler Penetrasyon Testi</h1>
+      <p>Güvenlik açıklarını tespit etmek için testleri başlatın.</p>
+    </header>
+    <main>
+      <section class="form-section">
+        <h2>Test Seçimi</h2>
+        <form id="scan_form">
+          <div class="input-group">
+            <label for="scan_type">Tarama Türü:</label>
+            <select id="scan_type" name="scan_type" onchange="toggleNmapOptions()" required>
+              <option value="sql_injection">SQL Injection</option>
+              <option value="ZAP PROXY">ZAP Proxy</option>
+              <option value="nmap">Nmap</option>
+              <option value="metasploit">Metasploit Giriş</option>
+              <option value="wireshark">Wİreshark</option>
+            </select>
+          </div>
+          <div class="input-group" id="zap_options_field" style="display:none;">
+            <label>ZAP Tarama Seçenekleri:</label>
+            <div>
+              <input type="checkbox" id="spider" name="spider"> <label for="spider">Spider Taraması</label><br>
+              <input type="checkbox" id="ajax" name="ajax"> <label for="ajax">AJAX Spider Taraması</label><br>
+              <input type="checkbox" id="active" name="active"> <label for="active">Aktif Tarama</label><br>
+            </div>
+            <div class="input-group">
+              <label for="target_ip">Hedef IP/URL:</label>
+              <input type="text" id="target_ip" name="target_ip" placeholder="https://example.com" required>
+            </div>
+          </div>
+
+          <div class="input-group" id="nmap_type_field" style="display:none;">
+            <label for="nmap_scan_type">Nmap Tarama Türü:</label>
+            <select id="nmap_scan_type" name="nmap_scan_type" onchange="updatePlaceholder()" required>
+              <option value="ping">Ping Taraması</option>
+              <option value="port">Port Taraması</option>
+              <option value="version">Servis ve Versiyon</option>
+              <option value="os">İşletim Sistemi</option>
+              <option value="aggressive">Agresif Tarama</option>
+              <option value="syn">SYN Tarama</option>
+              <option value="udp">UDP Tarama</option>
+              <option value="firewall_bypass">Güvenlik Duvarı Atlama</option>
+              <option value="script">Script Tarama</option>
+            </select>
+          </div>
+
+          <div class="input-group" id="command_field" style="display:none;">
+            <label for="command">Özel Nmap Komutu:</label>
+            <input type="text" id="command" name="command">
+          </div>
+
+          <button type="submit" class="submit-btn">Başlat</button>
+        </form>
+        <div id="tshark_capture_section" style="display:none;">
+          <h3>🎯 Tshark ile Ağ Trafiği Kaydet</h3>
+          <label>Arayüz: <input type="text" id="capture_interface" value="eth0" /></label>
+          <label>Süre (sn): <input type="number" id="capture_duration" value="10" /></label>
+          <button onclick="startCapture(event)">Kaydı Başlat</button>
+          <p id="capture_status"></p>
+        </div>
+
+
+        <div id="sql_injection_section" style="display:none; margin-top: 20px;">
+          <div id="login_form">
+            <h3>SQL Injection Giriş</h3>
+            <input type="text" id="injection_username" placeholder="Kullanıcı Adı">
+            <input type="password" id="injection_password" placeholder="Şifre">
+            <button onclick="loginInjection()">Giriş Yap</button>
+            <p id="login_status"></p>
+          </div>
+
+          <div id="comment_search_section" style="display:none;">
+            <h3>Yorum Ekle</h3>
+            <textarea id="injection_comment" rows="3" placeholder="Yorum giriniz..."></textarea>
+            <button onclick="submitCommentInjection()">Yorum Gönder</button>
+            <p id="comment_status"></p>
+
+            <h3>SQL Injection Arama</h3>
+            <input type="text" id="injection_payload" placeholder="%' UNION SELECT ...">
+            <button onclick="searchInjection()">Sorguyu Çalıştır</button>
+            <pre id="injection_result"></pre>
+          </div>
+        </div>
+
+
+        <div id="scan_result"></div>
+        {% if message and message.status %}
+        <div class="status-box {% if message.status == 'success' %}success{% else %}error{% endif %}">
+            <h2>Bağlantı Durumu: {{ message.status }}</h2>
+            {% if message.status == 'success' %}
+                <p><strong>MSF Sürümü:</strong> {{ message.version }}</p>
+                <p><strong>Ruby Versiyonu:</strong> {{ message.ruby_version }}</p>
+                <p><strong>API Versiyonu:</strong> {{ message.api_version }}</p>
+                <p><strong>Mevcut Exploit Sayısı:</strong> {{ message.exploits }}</p>
+                <p><strong>RPC Servisinin PID'si:</strong> {{ message.pid }}</p>
+            {% else %}
+                <p><strong>Hata:</strong> {{ message.message }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+      </section>
+    </main>
+    <footer>
+      <p>© 2025 Modüler Penetrasyon Testi Projesi</p>
+    </footer>
+  </div>
+  <div class="pdf-container" id="pdf_download">
+    <h3>Tarama Raporu</h3>
+    <a id="pdf_link" href="#" target="_blank">📄 PDF Raporunu İndir</a>
+  </div>
+  <div id="old_pdfs"></div>
+  <script>
+function toggleNmapOptions() {
+  var scanType = document.getElementById("scan_type").value;
+
+  var nmapTypeField = document.getElementById("nmap_type_field");
+  var commandField = document.getElementById("command_field");
+  var zapOptionsField = document.getElementById("zap_options_field");
+  var sqlField = document.getElementById("sql_injection_section");
+
+      if (scanType === "nmap") {
+        nmapTypeField.style.display = "block";
+        commandField.style.display = "block";
+        zapOptionsField.style.display = "none";
+        sqlField.style.display = "none";
+      } else if (scanType === "ZAP PROXY") {
+        nmapTypeField.style.display = "none";
+        commandField.style.display = "none";
+        zapOptionsField.style.display = "block";
+        sqlField.style.display = "none";
+      } else if (scanType === "sql_injection") {
+        nmapTypeField.style.display = "none";
+        commandField.style.display = "none";
+        zapOptionsField.style.display = "none";
+        sqlField.style.display = "block"; // 🔥 sadece bu burada aktif
+      } else {
+        // Diğerleri için hepsini kapat
+        nmapTypeField.style.display = "none";
+        commandField.style.display = "none";
+        zapOptionsField.style.display = "none";
+        sqlField.style.display = "none";
+      }
+    }
+
+
+
+    function updatePlaceholder() {
+      var scanType = document.getElementById("nmap_scan_type").value;
+      var commandField = document.getElementById("command");
+
+      var placeholders = {
+        "ping": "nmap -sn 192.168.1.0/24",
+        "port": "nmap -p 80,443 192.168.1.10",
+        "version": "nmap -sV 192.168.1.10",
+        "os": "nmap -O 192.168.1.10",
+        "aggressive": "nmap -A 192.168.1.10",
+        "syn": "nmap -sS 192.168.1.10",
+        "udp": "nmap -sU -p 53,161 192.168.1.10",
+        "firewall_bypass": "nmap -f 192.168.1.10",
+        "script": "nmap --script=vuln 192.168.1.10"
+      };
+
+      commandField.placeholder = placeholders[scanType] || "Özel komut giriniz...";
+    }
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("scan_form").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    var scanType = document.getElementById("scan_type").value;
+    var resultDiv = document.getElementById("scan_result");
+    var pdfContainer = document.getElementById("pdf_download");
+    var oldPdfContainer = document.getElementById("old_pdfs");
+
+
+    if (scanType !== "nmap" && scanType !== "wireshark") {
+      resultDiv.innerHTML = `
+        <div class="loading-animation">
+          <i class="fas fa-spinner fa-spin"></i> İşlem yapılıyor, lütfen bekleyin...
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = "";
+    }
+
+    pdfContainer.style.display = "none";
+
+    let requestBody = { scan_type: scanType };
+    if (scanType === "wireshark") {
+      document.getElementById("tshark_capture_section").style.display = "block";
+      startCapture();
+      return;
+    }
+
+
+    if (scanType === "nmap") {
+      var command = document.getElementById("command").value.trim();
+      requestBody.command = command;
+    }
+
+    if (scanType === "ZAP PROXY") {
+      requestBody.zap_options = {
+        spider: document.getElementById("spider").checked,
+        ajax: document.getElementById("ajax").checked,
+        active: document.getElementById("active").checked
+      };
+      requestBody.target_ip = document.getElementById("target_ip").value.trim();
+    }
+
+    fetch("/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (scanType === "nmap") {
+        resultDiv.innerHTML = `<pre>${data.result}</pre>`;
+      } else if (scanType === "metasploit") {
+        if (data.result.status === "success") {
+          resultDiv.innerHTML = `
+            <div class="status-box success">
+              <h2>Bağlantı Durumu: ${data.result.status}</h2>
+              <p><strong>MSF Sürümü:</strong> ${data.result.version}</p>
+              <p><strong>Mevcut Exploit Sayısı:</strong> ${data.result.exploits}</p>
+              <p><strong>RPC Servisinin PID'si:</strong> ${data.result.pid}</p>
+            </div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="status-box error">
+              <h2>Hata:</h2> ${data.result.message}
+            </div>`;
+        }
+      } else if (scanType === "wireshark") {
+        document.getElementById("wireshark_info").style.display = "none";
+        document.getElementById("tshark_capture_section").style.display = "block";
+      }
+      else if (scanType === "ZAP PROXY") {
+        let output = "<div><strong>ZAP Taraması Tamamlandı!</strong></div>";
+
+        if (data.result.spider_results && data.result.spider_results.length > 0) {
+          output += "<div><strong>🌐 Spider Sonuçları:</strong><ul>";
+          data.result.spider_results.forEach(url => {
+            output += `<li>${url}</li>`;
+          });
+          output += "</ul></div>";
+        }
+
+        if (data.result.ajax_results && data.result.ajax_results.length > 0) {
+          output += "<div><strong>⚙️ AJAX Spider Sonuçları:</strong><ul>";
+          data.result.ajax_results.forEach(url => {
+            output += `<li>${JSON.stringify(url)}</li>`;
+          });
+          output += "</ul></div>";
+        }
+
+        if (data.result.alerts && data.result.alerts.length > 0) {
+          output += `<div><strong>🚨 Aktif Tarama Uyarıları (Toplam: ${data.result.alerts.length}):</strong><ul>`;
+          data.result.alerts.forEach(alert => {
+            output += `
+              <li>
+                <strong>Uyarı:</strong> ${alert.alert} <br>
+                <strong>Risk:</strong> ${alert.risk} <br>
+                <strong>URL:</strong> ${alert.url} <br>
+                <strong>Parametre:</strong> ${alert.param || "Yok"} <br>
+                <strong>Açıklama:</strong> ${alert.description} <br>
+                <strong>Çözüm:</strong> ${alert.solution} <br>
+                <hr>
+              </li>
+            `;
+          });
+          output += "</ul></div>";
+        }
+
+        resultDiv.innerHTML = output;
+      } else {
+        resultDiv.innerHTML = `<pre>${data.result.message || data.result}</pre>`;
+      }
+
+
+      if (data.pdf) {
+        var currentPdf = document.getElementById("pdf_link").href;
+        if (currentPdf && currentPdf !== "#") {
+          var oldPdfDiv = document.createElement("div");
+          oldPdfDiv.classList.add("old-pdf");
+
+          var timestamp = new Date().getTime();
+          var oldPdfLink = document.createElement("a");
+          oldPdfLink.href = currentPdf + "?t=" + timestamp;
+          oldPdfLink.target = "_blank";
+          oldPdfLink.innerText = `📄 Önceki Rapor (${new Date().toLocaleTimeString()})`;
+
+          oldPdfDiv.appendChild(oldPdfLink);
+          oldPdfContainer.appendChild(oldPdfDiv);
+        }
+
+        pdfContainer.style.display = "block";
+        document.getElementById("pdf_link").href = "/download_pdf";
+      }
+    })
+    .catch(error => {
+      resultDiv.innerHTML = "<p style='color: red;'>Hata oluştu! Sunucuya istek gönderilemedi.</p>";
+    });
+  });
+});
+
+  </script>
+<script>
+function startCapture() {
+  if (event) event.preventDefault();
+  const iface = document.getElementById("capture_interface").value;
+  const duration = document.getElementById("capture_duration").value;
+  const statusEl = document.getElementById("capture_status");
+
+  statusEl.innerHTML = "⏳ Kayıt başlatıldı, lütfen bekleyin...";
+
+  fetch("/start_capture", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ interface: iface, duration: duration })
+  })
+  .then(res => res.json())
+  .then(data => {
+    // 🔥 BURAYA EKLE
+    console.log("🧠 Sunucudan gelen veri:", data);  // <-- BU SATIRI EKLE
+
+    if (data.status === "success") {
+      const link = `<a href="/download_capture/${data.filename}" target="_blank">📥 Kaydı İndir (.pcap)</a>`;
+      statusEl.innerHTML = "✅ Kayıt tamamlandı. " + link;
+    } else {
+      statusEl.innerHTML = "❌ Hata: " + data.message;
+    }
+  })
+  .catch(error => {
+    statusEl.innerHTML = "❌ İstek gönderilirken hata oluştu.";
+    console.error("İstek hatası:", error); // hata varsa göster
+  });
+}
+</script>
+</body>
+</html>
